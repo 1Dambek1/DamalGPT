@@ -56,4 +56,4 @@ print(text)
 ## Notes
 
 * The model is **small**, designed for future tests on different seq , for example basket game predictions.
-
+* In closest future i gonna update tokenization and add more layers, when get more resourses to train it(My pc dont wanna die)

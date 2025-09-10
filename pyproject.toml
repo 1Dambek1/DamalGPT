@@ -1,0 +1,22 @@
+[project]
+name = "torch-ai"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "datasets>=4.0.0",
+    "hf-xet>=1.1.9",
+    "matplotlib>=3.10.5",
+    "natasha>=1.6.0",
+    "navec>=0.10.0",
+    "numpy>=2.3.2",
+    "pandas>=2.3.1",
+    "pygame>=2.6.1",
+    "requests>=2.32.5",
+    "scikit-learn>=1.7.1",
+    "scipy>=1.16.1",
+    "torch>=2.0.1",
+    "tqdm>=4.67.1",
+    "wget>=3.2",
+]

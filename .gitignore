@@ -8,4 +8,5 @@ wheels/
 /datasets/
 # Virtual environments
 .venv
+training.py
 /gpt_dataset/

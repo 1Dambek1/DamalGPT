@@ -17,8 +17,8 @@ dropout = 0.2 # droupout param
 
 torch.manual_seed(1337)
 
-with open('gpt_dataset/input.txt', 'r', encoding='utf-8') as f:
-    text = f.read()
+# load y dataset
+text = ""
 
 # here are all the unique characters that occur in this text
 chars = sorted(list(set(text)))
@@ -116,7 +116,7 @@ class Block(nn.Module):
     x = x + self.ffwd(self.ln2(x))
     return x
 
-class BigramLanguageModel(nn.Module):
+class GPTModel(nn.Module):
 
     def __init__(self, vocab_size):
         super().__init__()

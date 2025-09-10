@@ -2,7 +2,7 @@
 
 # Small GPT Model Trained on Shakespeare Texts
 
-This is a small Transformer-based GPT model trained on Shakespeare's works. The model can generate text in Shakespearean style, including poems, dialogues, and other writings.
+This is a small Transformer-based GPT model trained on classical american writers works. The model can generate text in classical style, including poems, dialogues, and other writings.
 
 ---
 

@@ -22,7 +22,7 @@ This is a small Transformer-based GPT model trained on classical american writer
 
 ## Training Details
 
-* **Dataset:** Shakespeare texts (preprocessed and tokenized)
+* **Dataset:**  texts (preprocessed and tokenized)
 * **Number of epochs:** 5000
 * **Final train loss:** 1.1699
 * **Final validation loss:** 1.4958

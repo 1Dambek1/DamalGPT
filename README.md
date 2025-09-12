@@ -2,19 +2,19 @@
 
 # Small GPT Model Trained on Shakespeare Texts
 
-This is a small Transformer-based GPT model trained on classical american writers works. The model can generate text in classical style, including poems, dialogues, and other writings.
+This is a small Transformer-based GPT model trained on science papers and wikipedia articles. The model can generate articles.
 
 ---
 
 ## Model Details
 
 * **Architecture:** GPT / Transformer
-* **Number of parameters:** 2.5 million
-* **Number of layers (`n_layers`):** 5
+* **Number of parameters:** 95 million
+* **Number of layers (`n_layers`):** 10
 * **Hidden size (`d_model`):** 256
-* **Number of attention heads (`n_heads`):** 4
-* **Head dimension (`d_head`):** 64
-* **Context (block) size:** 256 tokens
+* **Number of attention heads (`n_heads`):** 8
+* **Head dimension (`d_head`):** 256
+* **Context (block) size:** 768 tokens
 * **Batch size:** 64
 * **Learning rate:** 6 × 10⁻⁴
 
@@ -22,10 +22,10 @@ This is a small Transformer-based GPT model trained on classical american writer
 
 ## Training Details
 
-* **Dataset:** Shakespeare texts (preprocessed and tokenized)
+* **Dataset:** wikipedia articles + science papers (preprocessed and tokenized)
 * **Number of epochs:** 5000
-* **Final train loss:** 1.1699
-* **Final validation loss:** 1.4958
+* **Final train loss:** 1.01
+* **Final validation loss:** 1.06
 * **Optimizer:** AdamW
 
 > The model was trained using a causal language modeling objective, predicting the next character/token given previous context.

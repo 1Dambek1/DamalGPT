@@ -10,3 +10,5 @@ wheels/
 .venv
 training.py
 /gpt_dataset/
+datas
+gpt-weights_0.tar

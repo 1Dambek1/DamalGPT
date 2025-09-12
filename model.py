@@ -12,7 +12,6 @@ n_emb = 256 # size of emb
 dropout = 0.2 # droupout param
 # ------------
 
-torch.manual_seed(1337)
 
 with open('gpt_dataset/input.txt', 'r', encoding='utf-8') as f:
     text = f.read()

@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-
+from transformers import AutoTokenizer, AutoModel
+from transformers import BertTokenizerFast
+import json
 # Запуск на CPU не лучшая идея
 # параметры
 batch_size = 64
@@ -11,29 +13,51 @@ eval_interval = 500 # logs every n
 learning_rate = 1e-3 #step in opt
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 eval_iters = 200
-n_emb = 256 # size of emb
+n_emb = 768 # size of emb
 dropout = 0.2 # droupout param
+
 # ------------
 
 torch.manual_seed(1337)
 
-with open('gpt_dataset/input.txt', 'r', encoding='utf-8') as f:
-    text = f.read()
+import json
+from transformers import BertTokenizerFast
 
-# here are all the unique characters that occur in this text
-chars = sorted(list(set(text)))
-vocab_size = len(chars)
-# create a mapping from characters to ntegers
-stoi = { ch:i for i,ch in enumerate(chars) }
-itos = { i:ch for i,ch in enumerate(chars) }
-encode = lambda s: [stoi[c] for c in s]
-decode = lambda l: ''.join([itos[i] for i in l])
+# Путь к JSON-файлу
+file_path = r"./datas/arxivData.json"
 
-# Train and test splits
-data = torch.tensor(encode(text), dtype=torch.long)
-n = int(0.9*len(data))
-train_data = data[:n]
-val_data = data[n:]
+# Чтение данных
+with open(file_path, "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+# Создаём fast-токенизатор
+tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
+
+# Добавляем специальный токен-разделитель
+special_token = "[ARTICLE_END]"
+if special_token not in tokenizer.get_vocab():
+    tokenizer.add_tokens([special_token])
+
+# Токенизация по статьям с добавлением разделителя
+all_tokens = []
+for article in data:
+    summary = article.get("summary", "")
+    # Токенизируем статью
+    tokens = tokenizer.encode(summary, add_special_tokens=True)
+    # Добавляем токены разделителя
+    all_tokens.extend(tokens + tokenizer.encode(special_token, add_special_tokens=False))
+
+
+tokens = torch.tensor(all_tokens, dtype=torch.long)
+
+bert_model = AutoModel.from_pretrained("bert-base-uncased").to(device)
+bert_model.resize_token_embeddings(len(tokenizer))
+vocab_size = len(tokenizer)
+for param in bert_model.parameters():
+    param.requires_grad = False
+n = int(0.9*len(tokens))
+train_data = tokens[:n]
+val_data = tokens[n:]
 
 # data loading
 def get_batch(split):
@@ -43,7 +67,6 @@ def get_batch(split):
     y = torch.stack([data[i+1:i+block_size+1] for i in ix])
     x, y = x.to(device), y.to(device)
     return x, y
-
 @torch.no_grad()
 def estimate_loss():
     out = {}
@@ -118,20 +141,27 @@ class Block(nn.Module):
 
 class BigramLanguageModel(nn.Module):
 
-    def __init__(self, vocab_size):
+    def __init__(self):
         super().__init__()
         # each token directly reads off the logits for the next token from a lookup table
-        self.token_embedding_table = nn.Embedding(vocab_size, n_emb)
         self.position_embedding_table = nn.Embedding(block_size, n_emb)
         # self.up_matrix = torch.tril(torch.ones(n_emb, n_emb, device=device))
         # self.up_matrix = F.softmax(self.up_matrix.masked_fill(self.up_matrix == 0, -torch.inf), dim = -1)
         self.lm_head = nn.Linear(n_emb,vocab_size)
         self.blocks = nn.Sequential(
-            Block(n_emb,n_head=4),
-            Block(n_emb,n_head=4),
-            Block(n_emb,n_head=4),
-            Block(n_emb,n_head=4),
-            Block(n_emb,n_head=4),
+            Block(n_emb,n_head=8),
+            Block(n_emb,n_head=8),
+            Block(n_emb,n_head=8),
+            Block(n_emb,n_head=8),
+            Block(n_emb,n_head=8),
+            Block(n_emb,n_head=8),
+            Block(n_emb,n_head=8),
+            Block(n_emb,n_head=8),
+            Block(n_emb,n_head=8),
+            Block(n_emb,n_head=8),
+
+
+
 
             nn.LayerNorm(n_emb),
         )
@@ -139,15 +169,18 @@ class BigramLanguageModel(nn.Module):
     def forward(self, idx, targets=None):
         B,T = idx.shape
         # idx and targets are both (B,T) tensor of integers
-        token_emb = self.token_embedding_table(idx) # (B,T,C)
+        token_emb = self.embeddings(idx) # (B,T,C)
         poss_emb = self.position_embedding_table(torch.arange(T, device=device))
-
         x = poss_emb+token_emb
         x = self.blocks(x)
         logits = self.lm_head(x)
         if targets is None:
+            logits = self.lm_head(x[:,-1,:])
+
             loss = None
         else:
+            logits = self.lm_head(x)
+
             B, T, C = logits.shape
             logits = logits.view(B*T, C)
             targets = targets.view(B*T)
@@ -169,15 +202,23 @@ class BigramLanguageModel(nn.Module):
             # append sampled index to the running sequence
             idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
         return idx
-
-model = BigramLanguageModel(vocab_size)
+    def embeddings(self,inputs):
+      with torch.no_grad():
+          outputs = bert_model(inputs)
+      return outputs.last_hidden_state
+model = BigramLanguageModel()
+total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+print("Trainable params (без BERT):", total_trainable_params)
 m = model.to(device)
 
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
 for iter in range(max_iters):
+    print(iter)
 
     if iter % eval_interval == 0:
+        torch.save(m.state_dict(), f"gpt-weights_{iter}.tar")
+
         losses = estimate_loss()
         print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
 
@@ -187,7 +228,5 @@ for iter in range(max_iters):
     optimizer.zero_grad(set_to_none=True)
     loss.backward()
     optimizer.step()
-
-context = torch.zeros((1, 1), dtype=torch.long, device=device)
-print(decode(m.generate(context, max_new_tokens=500)[0].tolist()))
 torch.save(m.state_dict(), "gpt-weights.tar")
+

@@ -22,7 +22,11 @@ This is a small Transformer-based GPT model trained on science papers and wikipe
 
 ## Training Details
 
+<<<<<<< HEAD
 * **Dataset:** wikipedia articles + science papers (preprocessed and tokenized)
+=======
+* **Dataset:**  texts (preprocessed and tokenized)
+>>>>>>> fa05ae548d2108628d6780335c7d6cef494664a8
 * **Number of epochs:** 5000
 * **Final train loss:** 1.01
 * **Final validation loss:** 1.06
@@ -56,4 +60,4 @@ print(text)
 ## Notes
 
 * The model is **small**, designed for future tests on different seq , for example basket game predictions.
-
+* In closest future i gonna update tokenization and add more layers, when get more resourses to train it(My pc dont wanna die)

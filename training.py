@@ -206,7 +206,7 @@ class GPTModel(nn.Module):
       with torch.no_grad():
           outputs = bert_model(inputs)
       return outputs.last_hidden_state
-model = BigramLanguageModel()
+model = GPTModel()
 total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print("Trainable params (без BERT):", total_trainable_params)
 m = model.to(device)

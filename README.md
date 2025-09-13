@@ -1,6 +1,6 @@
 
 
-# Small GPT Model Trained on Shakespeare Texts
+# Small GPT Model Trained on pila dataset 
 
 This is a small Transformer-based GPT model trained on science papers and wikipedia articles. The model can generate articles.
 
